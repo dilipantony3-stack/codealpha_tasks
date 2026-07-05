@@ -1,0 +1,80 @@
+{% extends 'store/base.html' %}
+{% block title %}Shopping Cart — ShopEase{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:2rem">
+  <h1 class="page-title">Shopping Cart</h1>
+
+  {% if cart.items.all %}
+  <div class="cart-layout">
+
+    <!-- CART ITEMS -->
+    <div class="cart-items">
+      {% for item in cart.items.all %}
+      <div class="cart-row">
+        <div class="cart-item-img">
+          {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          {% else %}
+            <div class="product-img-placeholder small">📦</div>
+          {% endif %}
+        </div>
+        <div class="cart-item-info">
+          <h3><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
+          {% if item.product.category %}
+            <span class="product-category">{{ item.product.category.name }}</span>
+          {% endif %}
+          <div class="cart-item-price">${{ item.product.price }} each</div>
+        </div>
+        <div class="cart-item-qty">
+          <form method="POST" action="{% url 'cart_update' item.id %}">
+            {% csrf_token %}
+            <div class="qty-input">
+              <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}">−</button>
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock }}"
+                     onchange="this.form.submit()">
+              <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}">+</button>
+            </div>
+          </form>
+        </div>
+        <div class="cart-item-subtotal">${{ item.subtotal }}</div>
+        <a href="{% url 'cart_remove' item.id %}" class="cart-remove" title="Remove">✕</a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="cart-summary">
+      <h2>Order Summary</h2>
+      <div class="summary-row">
+        <span>Subtotal ({{ cart.item_count }} item{{ cart.item_count|pluralize }})</span>
+        <strong>${{ cart.total }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span class="text-muted">Calculated at checkout</span>
+      </div>
+      <div class="summary-total">
+        <span>Total</span>
+        <strong>${{ cart.total }}</strong>
+      </div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'checkout' %}" class="btn-primary btn-block">Proceed to Checkout →</a>
+      {% else %}
+        <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn-primary btn-block">Login to Checkout</a>
+        <a href="{% url 'register' %}" class="btn-outline btn-block" style="margin-top:.5rem">Create Account</a>
+      {% endif %}
+      <a href="{% url 'product_list' %}" class="continue-shopping">← Continue Shopping</a>
+    </div>
+
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span>🛒</span>
+    <h2>Your cart is empty</h2>
+    <p>Looks like you haven't added anything yet.</p>
+    <a href="{% url 'product_list' %}" class="btn-primary">Start Shopping</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

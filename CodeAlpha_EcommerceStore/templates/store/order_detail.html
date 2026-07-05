@@ -1,0 +1,71 @@
+{% extends 'store/base.html' %}
+{% block title %}Order #{{ order.id }} — ShopEase{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:2rem">
+
+  <div class="order-detail-header">
+    <div>
+      <h1 class="page-title">Order #{{ order.id }}</h1>
+      <p class="text-muted">Placed on {{ order.created_at|date:"N j, Y, g:i a" }}</p>
+    </div>
+    <span class="status-badge status-{{ order.status }} large">{{ order.get_status_display }}</span>
+  </div>
+
+  <div class="order-detail-layout">
+
+    <!-- ITEMS -->
+    <div class="order-items-card">
+      <h2>Items Ordered</h2>
+      {% for item in order.items.all %}
+      <div class="order-item-row">
+        <div class="order-item-info">
+          <strong>{{ item.product_name }}</strong>
+          <span class="text-muted">Qty: {{ item.quantity }} × ${{ item.price }}</span>
+        </div>
+        <strong>${{ item.subtotal }}</strong>
+      </div>
+      {% endfor %}
+      <div class="order-total-row">
+        <span>Total</span>
+        <strong class="order-grand-total">${{ order.total_amount }}</strong>
+      </div>
+    </div>
+
+    <!-- SHIPPING + STATUS -->
+    <div>
+      <div class="order-info-card">
+        <h2>Shipping Address</h2>
+        <p>
+          {{ order.shipping_address }}<br>
+          {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_zip }}
+        </p>
+        {% if order.notes %}
+          <h3 style="margin-top:1rem">Notes</h3>
+          <p>{{ order.notes }}</p>
+        {% endif %}
+      </div>
+
+      <div class="order-info-card" style="margin-top:1rem">
+        <h2>Order Status</h2>
+        <div class="status-timeline">
+          {% for value, label in order.STATUS_CHOICES %}
+          <div class="timeline-step {% if order.status == value %}active{% endif %}
+                                    {% if forloop.counter <= order.STATUS_CHOICES|length %}done{% endif %}">
+            <div class="step-dot"></div>
+            <span>{{ label }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:1.5rem">
+    <a href="{% url 'order_list' %}" class="btn-outline">← Back to Orders</a>
+    <a href="{% url 'product_list' %}" class="btn-primary" style="margin-left:.75rem">Continue Shopping</a>
+  </div>
+
+</div>
+{% endblock %}

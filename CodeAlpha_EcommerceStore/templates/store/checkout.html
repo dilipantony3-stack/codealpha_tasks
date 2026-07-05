@@ -1,0 +1,55 @@
+{% extends 'store/base.html' %}
+{% block title %}Checkout — ShopEase{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:2rem">
+  <h1 class="page-title">Checkout</h1>
+
+  <div class="checkout-layout">
+
+    <!-- SHIPPING FORM -->
+    <div class="checkout-form">
+      <h2>Shipping Information</h2>
+      <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <div class="field-error">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="payment-notice">
+          <span>🔒</span>
+          <div>
+            <strong>Demo Mode</strong>
+            <p>This is a demo store. No real payment is processed. Click "Place Order" to simulate completing your order.</p>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-large btn-block">Place Order →</button>
+      </form>
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="cart-summary">
+      <h2>Your Order</h2>
+      {% for item in cart.items.all %}
+      <div class="checkout-item">
+        <span class="checkout-item-name">{{ item.product.name }} <em>×{{ item.quantity }}</em></span>
+        <span>${{ item.subtotal }}</span>
+      </div>
+      {% endfor %}
+      <hr>
+      <div class="summary-total">
+        <span>Total</span>
+        <strong>${{ cart.total }}</strong>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

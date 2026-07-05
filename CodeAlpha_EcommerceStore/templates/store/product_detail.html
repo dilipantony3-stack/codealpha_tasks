@@ -1,0 +1,110 @@
+{% extends 'store/base.html' %}
+{% block title %}{{ product.name }} — ShopEase{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top:2rem">
+
+  <!-- BREADCRUMB -->
+  <nav class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a> /
+    <a href="{% url 'product_list' %}">Products</a> /
+    {% if product.category %}
+      <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> /
+    {% endif %}
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <!-- PRODUCT DETAIL -->
+  <div class="product-detail">
+    <div class="product-detail-img">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="product-img-placeholder large">📦</div>
+      {% endif %}
+    </div>
+
+    <div class="product-detail-info">
+      {% if product.category %}
+        <span class="product-category">{{ product.category.name }}</span>
+      {% endif %}
+      <h1>{{ product.name }}</h1>
+      <div class="product-price large">${{ product.price }}</div>
+
+      <div class="stock-status {% if product.in_stock %}in-stock{% else %}out-stock{% endif %}">
+        {% if product.in_stock %}✓ In Stock ({{ product.stock }} available)
+        {% else %}✗ Out of Stock{% endif %}
+      </div>
+
+      <div class="product-description">
+        <h3>Description</h3>
+        <p>{{ product.description }}</p>
+      </div>
+
+      {% if product.in_stock %}
+      <form method="POST" action="{% url 'cart_add' product.id %}" class="add-to-cart-form">
+        {% csrf_token %}
+        <div class="qty-control">
+          <label>Quantity</label>
+          <div class="qty-input">
+            <button type="button" onclick="changeQty(-1)">−</button>
+            <input type="number" name="quantity" id="qty" value="1" min="1" max="{{ product.stock }}">
+            <button type="button" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button type="submit" class="btn-primary btn-large">🛒 Add to Cart</button>
+          <a href="{% url 'cart' %}" class="btn-outline btn-large">View Cart</a>
+        </div>
+      </form>
+      {% else %}
+      <p class="out-of-stock-msg">This product is currently unavailable.</p>
+      {% endif %}
+
+      <div class="product-meta">
+        <span>Added {{ product.created_at|date:"N j, Y" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATED PRODUCTS -->
+  {% if related %}
+  <section class="section" style="margin-top:3rem">
+    <h2 class="section-title">Related Products</h2>
+    <div class="product-grid">
+      {% for p in related %}
+      <div class="product-card">
+        <a href="{{ p.get_absolute_url }}" class="product-img-wrap">
+          {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}">
+          {% else %}<div class="product-img-placeholder">📦</div>{% endif %}
+        </a>
+        <div class="product-info">
+          <h3><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
+          <div class="product-footer">
+            <span class="product-price">${{ p.price }}</span>
+            {% if p.in_stock %}
+              <form method="POST" action="{% url 'cart_add' p.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn-cart">Add</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+<script>
+function changeQty(delta) {
+  const input = document.getElementById('qty');
+  const val = parseInt(input.value) + delta;
+  const max = parseInt(input.max);
+  if (val >= 1 && val <= max) input.value = val;
+}
+</script>
+{% endblock %}

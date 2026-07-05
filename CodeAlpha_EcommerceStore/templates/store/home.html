@@ -1,0 +1,98 @@
+{% extends 'store/base.html' %}
+{% block title %}ShopEase — Home{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">New arrivals every week</p>
+    <h1>Shop Smarter,<br><span>Live Better</span></h1>
+    <p class="hero-sub">Discover thousands of products at unbeatable prices, delivered right to your door.</p>
+    <div class="hero-ctas">
+      <a href="{% url 'product_list' %}" class="btn-primary">Browse Products</a>
+      {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn-outline">Create Account</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-blob"></div>
+    <div class="hero-badge"><span>🛍️</span><strong>Free Shipping</strong><small>on orders over $50</small></div>
+    <div class="hero-badge hero-badge--2"><span>↩️</span><strong>Easy Returns</strong><small>30-day policy</small></div>
+    <div class="hero-badge hero-badge--3"><span>🔒</span><strong>Secure Pay</strong><small>100% protected</small></div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+{% if categories %}
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="category-grid">
+      {% for cat in categories %}
+      <a href="{% url 'product_list' %}?category={{ cat.slug }}" class="category-card">
+        <div class="category-icon">🏷️</div>
+        <span>{{ cat.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FEATURED PRODUCTS -->
+{% if featured %}
+<section class="section section--gray">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Featured Products</h2>
+      <a href="{% url 'product_list' %}" class="view-all">View all →</a>
+    </div>
+    <div class="product-grid">
+      {% for product in featured %}
+      <div class="product-card">
+        <a href="{{ product.get_absolute_url }}" class="product-img-wrap">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="product-img-placeholder">📦</div>
+          {% endif %}
+          {% if not product.in_stock %}
+            <span class="badge-out">Out of Stock</span>
+          {% endif %}
+        </a>
+        <div class="product-info">
+          {% if product.category %}
+            <span class="product-category">{{ product.category.name }}</span>
+          {% endif %}
+          <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+          <div class="product-footer">
+            <span class="product-price">${{ product.price }}</span>
+            {% if product.in_stock %}
+              <form method="POST" action="{% url 'cart_add' product.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn-cart">Add to Cart</button>
+              </form>
+            {% else %}
+              <span class="text-muted">Unavailable</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- TRUST STRIP -->
+<section class="trust-strip">
+  <div class="container trust-grid">
+    <div class="trust-item"><span>🚚</span><strong>Free Delivery</strong><small>Orders over $50</small></div>
+    <div class="trust-item"><span>🔁</span><strong>Easy Returns</strong><small>30-day window</small></div>
+    <div class="trust-item"><span>🔐</span><strong>Secure Checkout</strong><small>SSL encrypted</small></div>
+    <div class="trust-item"><span>💬</span><strong>24/7 Support</strong><small>We're here to help</small></div>
+  </div>
+</section>
+{% endblock %}
